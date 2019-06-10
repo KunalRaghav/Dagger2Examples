@@ -5,35 +5,55 @@ import android.os.Bundle
 import dagger.Component
 import dagger.Module
 import dagger.Provides
+import dagger.Subcomponent
 import kotlinx.android.synthetic.main.activity_main.*
 import javax.inject.Inject
 import javax.inject.Qualifier
 import javax.inject.Scope
+import javax.inject.Singleton
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var magicBox: MagicBox
+    private lateinit var mainBox: SingletonBox
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        magicBox = DaggerMagicBox.create()
-
+        mainBox = DaggerSingletonBox.create()
         btn_create.setOnClickListener {
-            val storage = Storage()
-            magicBox.poke(storage)
-            textView.text = "Unique ${storage.uniqueMagic.count}" + "\nNormal ${storage.normalMagic.count} "
+            magicBox = mainBox.getMagicBox()
+            useStorage()
         }
+        btn_reuse.setOnClickListener{
+            useStorage()
+        }
+    }
+    private fun useStorage() {
+        val storage = Storage()
+        magicBox.poke(storage)
+        textView.text =
+            "\nSingletonOne ${storage.singletonOne.count} " +
+                    "\nUniqueMagic ${storage.uniqueMagic.count}" +
+                    "\nNormalMagic ${storage.normalMagic.count} "
     }
 }
 
-@MagicScope
+@Singleton
 @Component
+interface SingletonBox {
+    fun getMagicBox(): MagicBox
+}
+
+
+@MagicScope
+@Subcomponent
 interface MagicBox {
     fun poke(storage: Storage)
 }
 
 class Storage {
+    @Inject lateinit var singletonOne: SingletonOne
     @Inject lateinit var uniqueMagic: UniqueMagic
     @Inject lateinit var normalMagic: NormalMagic
 }
@@ -50,5 +70,10 @@ class UniqueMagic @Inject constructor() {
 }
 
 class NormalMagic @Inject constructor() {
+    val count = staticCounter++
+}
+
+@Singleton
+class SingletonOne @Inject constructor() {
     val count = staticCounter++
 }

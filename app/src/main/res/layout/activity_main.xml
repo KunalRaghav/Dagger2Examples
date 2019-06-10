@@ -26,4 +26,14 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
     />
+    <Button
+            android:layout_margin="48dp"
+            android:text="Reuse storage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btn_reuse"
+            app:layout_constraintBottom_toTopOf="@id/btn_create"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+    />
 </android.support.constraint.ConstraintLayout>
