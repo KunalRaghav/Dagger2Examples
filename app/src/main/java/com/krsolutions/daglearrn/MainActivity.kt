@@ -8,47 +8,47 @@ import dagger.Provides
 import kotlinx.android.synthetic.main.activity_main.*
 import javax.inject.Inject
 import javax.inject.Qualifier
+import javax.inject.Scope
 
-const val NEVER = "Never"
-const val LOVE = "Love"
 class MainActivity : AppCompatActivity() {
 
-    val component = DaggerMagicBox.create()
-    @Inject @field:Choose(NEVER) lateinit var infoNEVER: Info
-    @Inject @field:Choose(LOVE) lateinit var infoSays: Info
+    private lateinit var magicBox: MagicBox
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        component.poke(this)
-        textView.text = " ${infoNEVER.text} ${infoSays.text} "
-    }
-}
-class Info constructor(text:String){
-    val text = text
-}
+        magicBox = DaggerMagicBox.create()
 
-@Component(modules = [Bag::class])
-interface MagicBox{
-    fun poke(app:MainActivity)
-}
-
-@Module
-class Bag{
-    @Provides
-    @Choose(NEVER)
-    fun infoSaysNeverSayNever():Info{
-        return Info("info says never say never")
-    }
-
-    @Provides
-    @Choose(LOVE)
-    fun infoSaysLove():Info{
-        return Info("info says it loves dagger")
+        btn_create.setOnClickListener {
+            val storage = Storage()
+            magicBox.poke(storage)
+            textView.text = "Unique ${storage.uniqueMagic.count}" + "\nNormal ${storage.normalMagic.count} "
+        }
     }
 }
 
-@Qualifier
-@MustBeDocumented
+@MagicScope
+@Component
+interface MagicBox {
+    fun poke(storage: Storage)
+}
+
+class Storage {
+    @Inject lateinit var uniqueMagic: UniqueMagic
+    @Inject lateinit var normalMagic: NormalMagic
+}
+
+@Scope
 @kotlin.annotation.Retention(AnnotationRetention.RUNTIME)
-annotation class Choose(val value: String = "")
+annotation class MagicScope
+
+var staticCounter = 0
+
+@MagicScope
+class UniqueMagic @Inject constructor() {
+    val count = staticCounter++
+}
+
+class NormalMagic @Inject constructor() {
+    val count = staticCounter++
+}
